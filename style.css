@@ -1,0 +1,87 @@
+body {
+	background-color: #cdcdcd;
+	vertical-align: top;
+	display: inline;
+	font-size: 1em;
+	color: black;
+	font-family: "Arial", Arial, sans-serif;
+	-WEBKIT-USER-SELECT: NONE; /* SAFARI, CHROME */
+    -KHTML-USER-SELECT: NONE; /* KONQUEROR */
+    -MOZ-USER-SELECT: NONE; /* FIREFOX */
+    -MS-USER-SELECT: NONE; /* IE */
+    USER-SELECT: NONE; /* CSS3 */
+	
+}
+td {
+	padding: 0px;
+}
+p.title {
+	margin: 4px;
+	font-size: 4em;
+	color: rgb(32,192,32);
+}
+p {
+	font-size: 2em;
+	margin: 4px;
+	padding: 4px;
+}
+.grid {
+	display: inline-block;
+	border-collapse: collapse;
+	border: 2px;
+	border-style: solid;
+	border-color: #888888;
+}
+.sprite {
+	display: inline-block;
+	text-align: center;
+	position: relative;
+	width: 100px;
+	height: 100px;
+	background-size: 100% 100%;
+}
+.sprite:hover {
+	-webkit-filter: brightness(3);
+	
+}
+.sprite:hover .tip {
+	visibility: visible;
+}
+.tip {
+	cursor: default;
+	font-size: 1.5em;
+	color: black;
+	visibility: hidden;
+	display: flex;
+	align-items: center;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: auto;
+	height: auto;
+	background-size: 100% 100%;
+	z-index: 0;
+}
+.progress {
+	height: 4px;
+	position: absolute;
+	bottom: 0px;
+}
+.info {
+color: #008800;
+	font-size: 2em;
+}
+.select {
+	color: #008800;
+	font-size: 2em;
+	text-align: center;
+}
+.selected {
+	border: 8px;
+	border-radius: 8px;
+	border-style: solid;
+	border-color: #ff0000;
+	width: 84px;
+	height: 84px;
+}
+
