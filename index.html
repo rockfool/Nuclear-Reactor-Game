@@ -1,10 +1,17 @@
 <html>
     <head>
-        <title>Template</title>   
+        <title>Nuclear Reactor</title>   
         <script type="text/javascript" src="script.js"></script>
 		<link rel="stylesheet" type="text/css" href="style.css"></link>
     </head>
 	<body id = "body" onload = "initialize()">
-	<p>To make a reactor, create an enclosed area using casings, then place at least one coolant extractor and fuel rod to start the reaction.</p>
+		<p>To make a reactor, create an enclosed area using casings, then place at least one coolant extractor and fuel rod to start the reaction.</p>
+		<div id = "info">
+			<span class = "bold" id = "money"></span> <br>
+			<p class = "bold">Rate: <span id = "rate"></span> $/sec</p>
+			<p style = "color: #800000;">Heat display</p>
+			<input type = "range" id = "heat">
+			<table id = "grid"></table>
+		</div>
 	</body>
 </html>

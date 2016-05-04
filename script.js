@@ -89,13 +89,12 @@ var voxelData = {
 // Game wrapper
 function Game() {
 	// private
-	this.info = document.createElement('DIV');
-	this.grid; // Grid class
-	this.heat; // heat view settings
+	this.grid = document.getElementById('grid'); // Grid class
+	this.heat = document.getElementById('heat'); // heat view settings
 	this.selection =  []; // block selection
 	this.selected; // currently selected voxel type
 	this.pressureSum = 0;
-	this.money = 1000;
+	this.money = 10000;
 	this.previousMoney;
 	this.lastFrame = Date.now();
 	// mouse
@@ -112,14 +111,16 @@ function Game() {
 	this.start = function (delay) {
 		var self = this;
 		self.interval = window.setInterval(function () {
-			var elapsed = (Date.now() - self.lastFrame);
+			var now = Date.now();
+			var elapsed = (now - self.lastFrame)/1000;
+			self.lastFrame = now;
 			// update the simulation
 			var blocks = self.grid.update();
 			// fuel rods create pressure
 			blocks.fuelRods.forEach(function (fuel) {
 				if (fuel.health > 0) {
-					fuel.addPressure((1/60)*voxelData[fuel.name].rate);
-					fuel.addHealth(-((1/60)*voxelData[fuel.name].rate)/voxelData[fuel.name].pressure);
+					fuel.addPressure((elapsed)*voxelData[fuel.name].rate);
+					fuel.addHealth(-((elapsed)*voxelData[fuel.name].rate)/voxelData[fuel.name].pressure);
 				} else {
 					fuel.initialize('Depleted fuel');
 					fuel.setHealth(0);
@@ -127,11 +128,11 @@ function Game() {
 			});
 			// pressure damages casings
 			blocks.casings.forEach(function (casing) {
-				self.damageVoxel(casing);
+				self.damageVoxel(casing,elapsed);
 			});
 			// eject pressure
 			blocks.coolantEjectors.forEach(function (ejector) {
-				self.damageVoxel(ejector);
+				self.damageVoxel(ejector,elapsed);
 				var transfer = ejector.pressure * voxelData[ejector.name].rate;
 				self.pressureSum += transfer;
 				// reset the ejector
@@ -141,12 +142,17 @@ function Game() {
 			self.money += self.pressureSum;
 			self.pressureSum = 0;
 			// update money supply
-			self.info.innerHTML = '$' + printWithCommas(Math.floor(self.money)) + '<br>' + 'Rate: ' + ((self.money-self.previousMoney)/(1/60)).toFixed(3) + ' $/sec';
+			var rate = ((self.money-self.previousMoney)/elapsed).toFixed(3);
+			if (rate > 10) {
+				rate = Math.round(rate);
+			}
+			document.getElementById('money').innerHTML = '$' + printWithCommas(Math.floor(self.money)); 
+			document.getElementById('rate').innerHTML = printWithCommas(rate);
 		}, delay);
 	}
-	this.damageVoxel = function (voxel) {
+	this.damageVoxel = function (voxel,time) {
 		if (voxel.pressure >= voxel.meltingPoint) {
-			voxel.addHealth(-(1/60)/voxelData[voxel.name].health);
+			voxel.addHealth(-time/voxelData[voxel.name].health);
 		}
 		if (voxel.health < 0) {
 			voxel.initialize('Molten metal');
@@ -159,18 +165,11 @@ function Game() {
 	this.interval;
 	this.initialize = function () {
 		var self = this;
-		// info
-		self.info.className = 'info';
 		// heat slider
-		var heatDiv = document.createElement('DIV');
-		heatDiv.innerHTML = 'heat display sensitivity';
-		self.heat = document.createElement('INPUT');
-		self.heat.type = 'range';
 		self.heat.min = 1;
 		self.heat.max = 2;
 		self.heat.step = 0.125;
 		self.heat.value = 1;
-		heatDiv.appendChild(self.heat);
 		// block selection
 		var table = document.createElement('TABLE');
 		table.style.display = 'inline-block';
@@ -202,8 +201,7 @@ function Game() {
 		self.grid = new Grid(9,9);
 		// append everything to the body
 		var body = document.getElementById('body');
-		body.appendChild(self.info);
-		body.appendChild(heatDiv);
+		body.appendChild(self.heat);
 		body.appendChild(self.grid.table);
 		body.appendChild(table);
 		// mouse
@@ -267,12 +265,14 @@ function Grid(width,height) {
 					var adjX = x + Math.round(Math.cos(rot*Math.PI));
 					var adjY = y + Math.round(Math.sin(rot*Math.PI));
 					if (adjY >= 0 && adjY <= self.data.length-1 && adjX >= 0 && adjX <= self.data.length-1) {
-						if (voxelData[self.data[adjX][adjY].name].type != 'casing' || voxelData[cell.name].type == 'casing') {
-							adjacent.push({pressure: self.data[adjX][adjY].pressure,x:adjX,y:adjY});
+						var adjCell = self.data[adjX][adjY];
+						if ((cell.type == 'casing' && adjCell.type == 'casing') || (adjCell.type != 'casing')) {
+							adjacent.push({pressure: adjCell.pressure,x:adjX,y:adjY});
 						}
-					} else if (cell.pressure > 0 && voxelData[cell.name].type != 'casing' && voxelData[cell.name].type != 'coolant_ejector') {
+					} else if (cell.pressure > 0 && cell.type != 'casing' && cell.type != 'coolant_ejector') {
 						if (window.confirm('Reactor breach!')) {
 							game.reload();
+							break;
 						}
 					}
 				}
@@ -299,7 +299,7 @@ function Grid(width,height) {
 		return special;
 	}
 	// private
-	this.table = document.createElement('TABLE');
+	this.table = document.getElementById('grid');
 	this.data = [];
 	this.initialize = function (width, height) {
 		var self = this;
@@ -365,6 +365,7 @@ function Voxel(name,select) {
 	// data
 	this.select = select;
 	this.name;
+	this.type;
 	this.health = 0;
 	this.pressure = 0;
 	this.meltingPoint;
@@ -376,6 +377,7 @@ function Voxel(name,select) {
 		// data
 		self.select = select;
 		self.name = name;
+		self.type = voxelData[self.name].type;
 		self.setHealth(0);
 		self.meltingPoint = voxelData[self.name].meltingPoint;
 		self.addHtml();
@@ -427,10 +429,7 @@ function Voxel(name,select) {
 		var self = this;
 		if (!self.select) {
 			if (left) {
-				if (game.selected != undefined && self.cost()) {
-					if (voxelData[self.name].type == 'casing') {
-						self.setPressure(0);
-					}
+				if (game.selected != undefined && (['coolant','molten_fuel_rod','molten_metal','depleted_fuel'].indexOf(self.type) != -1 || (self.name == game.selected)) && self.cost()) {
 					self.initialize(game.selected);
 				}
 			} else if (right) {

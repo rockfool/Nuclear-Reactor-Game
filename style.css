@@ -1,7 +1,7 @@
 body {
 	background-color: #cdcdcd;
 	vertical-align: top;
-	display: inline;
+	display: inline-block;
 	font-size: 1em;
 	color: black;
 	font-family: "Arial", Arial, sans-serif;
@@ -11,6 +11,31 @@ body {
     -MS-USER-SELECT: NONE; /* IE */
     USER-SELECT: NONE; /* CSS3 */
 	
+}
+.bold {
+	font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
+}
+#money {
+	color: #008800;
+	font-size: 3em;
+	background-color: #88f088;
+	
+	border: 4px;
+	border-style: solid;
+	border-color: #809080;
+	
+	margin: 8px;
+	padding: 4px;
+	width: auto;
+}
+#rate {
+	color: #008800;
+	margin: 8px;
+}
+#heat {
+	margin: 8px;
+	display: block;
+	float: top;
 }
 td {
 	padding: 0px;
@@ -25,11 +50,12 @@ p {
 	margin: 4px;
 	padding: 4px;
 }
-.grid {
+#grid {
+	margin: 8px;
 	display: inline-block;
 	border-collapse: collapse;
-	border: 2px;
-	border-style: solid;
+	border: 8px;
+	border-style: outset;
 	border-color: #888888;
 }
 .sprite {
@@ -66,10 +92,6 @@ p {
 	height: 4px;
 	position: absolute;
 	bottom: 0px;
-}
-.info {
-color: #008800;
-	font-size: 2em;
 }
 .select {
 	color: #008800;
