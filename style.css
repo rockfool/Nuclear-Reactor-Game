@@ -1,28 +1,30 @@
 body {
+	cursor: default;
 	background-color: #cdcdcd;
 	vertical-align: top;
 	display: inline-block;
 	font-size: 1em;
 	color: black;
-	font-family: "Arial", Arial, sans-serif;
+	font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
 	-WEBKIT-USER-SELECT: NONE; /* SAFARI, CHROME */
     -KHTML-USER-SELECT: NONE; /* KONQUEROR */
     -MOZ-USER-SELECT: NONE; /* FIREFOX */
     -MS-USER-SELECT: NONE; /* IE */
     USER-SELECT: NONE; /* CSS3 */
-	
-}
-.bold {
-	font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
+	border: 8px;
+	padding: 8px;
+	border-style: dashed;
+	border-color: #404040;
 }
 #money {
 	color: #008800;
 	font-size: 3em;
 	background-color: #88f088;
 	
-	border: 4px;
-	border-style: solid;
-	border-color: #809080;
+	border: 6px;
+	border-style: double;
+	border-color: #008800;
+	border-radius: 3px;
 	
 	margin: 8px;
 	padding: 4px;
@@ -32,31 +34,28 @@ body {
 	color: #008800;
 	margin: 8px;
 }
-#heat {
-	margin: 8px;
-	display: block;
-	float: top;
-}
 td {
 	padding: 0px;
-}
-p.title {
-	margin: 4px;
-	font-size: 4em;
-	color: rgb(32,192,32);
-}
-p {
-	font-size: 2em;
-	margin: 4px;
-	padding: 4px;
 }
 #grid {
 	margin: 8px;
 	display: inline-block;
+	vertical-align: top;
 	border-collapse: collapse;
 	border: 8px;
 	border-style: outset;
 	border-color: #888888;
+}
+#selection {
+	display: inline-block;
+	vertical-align: top;
+}
+#achievements {
+	display: inline-block;
+	margin: 8px;
+	right: 0px;
+	
+	
 }
 .sprite {
 	display: inline-block;
@@ -101,9 +100,37 @@ p {
 .selected {
 	border: 8px;
 	border-radius: 8px;
-	border-style: solid;
-	border-color: #ff0000;
+	border-style: dashed;
+	background-color: #ffffff;
+	background-repeat: no-repeat;
+	border-color: #880000;
 	width: 84px;
 	height: 84px;
+}
+.achievement {
+	font-size: 3em;
+	color: #404040;
+	margin-top: 4px;
+	margin-bottom: 4px;
+	margin-left: 16px;
+	padding: 4px;
+	background-color: #808080;
+	
+	border: 8px;
+	border-style: double;
+	border-radius: 8px;
+	border-color: #404040;
+	
+	list-style-image: url('sprites/locked.png');
+}
+.achieved {
+	color: #006600;
+	background-color: #c6ffb3;
+	border-color: #006600;
+	
+	list-style-image: url('sprites/check.png');
+}
+.description {
+	
 }
 
