@@ -100,10 +100,10 @@ td {
 .selected {
 	border: 8px;
 	border-radius: 8px;
-	border-style: dashed;
+	border-style: inset;
 	background-color: #ffffff;
 	background-repeat: no-repeat;
-	border-color: #880000;
+	border-color: #0000ff;
 	width: 84px;
 	height: 84px;
 }
