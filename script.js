@@ -16,74 +16,74 @@ var voxelData = {
 	'Thorium': {
 type: 'fuel_rod',
 sprite: 'sprites/thorium.png',
-pressure: 125,
-rate: 5,
+pressure: 125000,
+rate: 5000,
 price: 100,
-meltingPoint: 1,
+meltingPoint: 1000,
 	},
 	'Uranium': {
 type: 'fuel_rod',
 sprite: 'sprites/uranium.png',
-pressure: 3000,
-rate: 10,
+pressure: 3000000,
+rate: 10000,
 price: 2000,
-meltingPoint: 2,
+meltingPoint: 1700,
 	},
 	'Plutonium': {
 type: 'fuel_rod',
 sprite: 'sprites/plutonium.png',
-pressure: 20000,
-rate: 50,
+pressure: 20000000,
+rate: 50000,
 price: 10000,
-meltingPoint: 3,
+meltingPoint: 3200,
 	},
 	'Depleted fuel': {
 type: 'depleted_fuel',
 sprite: 'sprites/depleted_fuel.png',
-meltingPoint: 1,
+meltingPoint: 2000,
 	},
 	'Molten fuel': {
 type: 'molten_fuel_rod',
 sprite: 'sprites/molten_fuel_rod.png',
-meltingPoint: 1,
+meltingPoint: 2000,
 	},
 	'Control rod': {
 type: 'control_rod',
 sprite: 'sprites/control_rod.png',
 price: 75,
-meltingPoint: 1,
+meltingPoint: 1000,
 	},
 	'Standard casing': {
 type: 'casing',
 sprite: 'sprites/casing.png',
 health: 16,
 price: 50,
-meltingPoint: 1,
+meltingPoint: 1510,
 	},
 	'Galvanized casing': {
 type: 'casing',
 sprite: 'sprites/galvanized_casing.png',
 health: 16,
 price: 1000,
-meltingPoint: 2,
+meltingPoint: 1700 ,
 	},
 	'Molten metal': {
 type: 'molten_metal',
 sprite: 'sprites/molten_metal.png',
-meltingPoint: 1,
+meltingPoint: 2000,
 price: 0,
 	},
 	'Coolant': {
 type: 'coolant',
 sprite: 'sprites/water.gif',
-meltingPoint: 1,
+meltingPoint: 1510,
 	},
 	'Coolant ejector': {
 type: 'coolant_ejector',
 sprite: 'sprites/coolant_ejector.png',
 price: 75,
 rate: 0.5,
-meltingPoint: 1,
+meltingPoint: 1510,
 	}
 }
 // Game wrapper
@@ -91,12 +91,12 @@ function Game() {
 	// private
 	this.debug = false;
 	this.grid = document.getElementById('grid'); // Grid class
-	this.achievements = [];
+	this.achievements = {};
 	this.selection =  []; // block selection
 	this.selected; // currently selected voxel type
 	this.pressureSum = 0;
 	this.money = this.debug ? Infinity : 1000;
-	this.previousMoney;
+	this.rate;
 	this.lastFrame = Date.now();
 	// mouse
 	this.mouse = {
@@ -106,7 +106,7 @@ right: false
 	};
 	this.reload = function () {
 		var self = this;
-		clearInterval(self.interval);
+		self.stop();
 		window.location.reload();
 	};
 	this.start = function (delay) {
@@ -139,24 +139,45 @@ right: false
 				// reset the ejector
 				ejector.addPressure(-transfer);
 			});
-			self.previousMoney = self.money;
-			self.money += self.pressureSum;
+			var previousMoney = self.money;
+			self.money += self.pressureSum/1000;
 			self.pressureSum = 0;
 			// update money supply
-			var rate = ((self.money-self.previousMoney)/elapsed).toFixed(3);
-			if (rate > 10) {
-				rate = Math.round(rate);
-			}
+			self.rate = Math.round((self.money-previousMoney)/elapsed);
 			document.getElementById('money').innerHTML = '$' + printWithCommas(Math.floor(self.money)); 
-			document.getElementById('rate').innerHTML = printWithCommas(rate);
+			document.getElementById('rate').innerHTML = printWithCommas(self.rate);
 			// check achievements
-			self.achievements.forEach(function (achievement) {
-				achievement.condition();
-			})
+			for (var achievement in self.achievements) {
+				if (self.achievements[achievement].condition()) {
+					// update local storage
+					self.storeAchievements();
+				}
+			}
 			if (self.debug) {
 				self.stop();
 			}
 		}, delay);
+	}
+	this.storeAchievements = function () {
+		var self = this;
+		if (typeof(Storage) !== "undefined") {
+			var reactorGame = {achievements:{}};
+			for (var achievement in self.achievements) {
+				reactorGame.achievements[self.achievements[achievement].name] = self.achievements[achievement].achieved;
+			}
+			localStorage.reactorGame = JSON.stringify(reactorGame);
+		}
+	}
+	this.loadAchievements = function () {
+		var self = this;
+		if (typeof(Storage) !== "undefined" && localStorage.reactorGame !== undefined) {
+			var reactorGame = JSON.parse(localStorage.reactorGame);
+			for (var achievement in reactorGame.achievements) {
+				if (reactorGame.achievements[achievement]) {
+					self.achievements[achievement].achieve();
+				}
+			};
+		}
 	}
 	this.damageVoxel = function (voxel,time) {
 		if (voxel.pressure >= voxel.meltingPoint) {
@@ -203,6 +224,10 @@ right: false
 		self.grid = new Grid(9,9);
 		// achievements
 		self.initializeAchievements();
+		document.getElementById('new').onclick = function () {
+			localStorage.removeItem('reactorGame');
+			self.reload();
+		}
 		// append everything to the body
 		var body = document.getElementById('body');
 		body.appendChild(self.grid.table);
@@ -229,55 +254,82 @@ right: false
 				self.start();
 			}
 		})
+		self.grid.resize(17,17);
 		game.start(100/6);
 	}
 	this.initializeAchievements = function () {
 		var self = this;
 		var list = document.getElementById('achievements');
 		//  <$100
-		self.achievements.push(new Achievement('Tight budget','less than $100'));
-		self.achievements[0].condition = function () {
+		self.achievements['Tight budget'] = new Achievement('Tight budget','less than $100');
+		self.achievements['Tight budget'].condition = function () {
 			if (self.money < 100) {
-				self.achievements[0].achieve();
+				self.achievements['Tight budget'].achieve();
+				return true;
+			}
+		}
+		//  100 $/s
+		self.achievements['Better than fast food'] = new Achievement('Better than fast food','over 100 $/sec',true);
+		self.achievements['Better than fast food'].condition = function () {
+			if (self.rate >= 100) {
+				self.achievements['Better than fast food'].achieve();
+				return true;
+			}
+		}
+		//  1000 $/s
+		self.achievements['Time is money'] = new Achievement('Time is money','over 1000 $/sec',true);
+		self.achievements['Time is money'].condition = function () {
+			if (self.rate >= 1000) {
+				self.achievements['Time is money'].achieve();
 				return true;
 			}
 		}
 		// $10,000
-		self.achievements.push(new Achievement('Entrepreneur','more than $10,000'));
-		self.achievements[1].condition = function () {
+		self.achievements['Entrepreneur'] = new Achievement('Entrepreneur','more than $10,000');
+		self.achievements['Entrepreneur'].condition = function () {
 			if (self.money >= 10000) {
-				self.achievements[1].achieve();
+				self.achievements['Entrepreneur'].achieve();
+				return true;
+			}
+			
+		}
+		//  2000 $/s
+		self.achievements['Overdrive'] = new Achievement('Overdrive','over 2000 $/sec',true);
+		self.achievements['Overdrive'].condition = function () {
+			if (self.rate >= 2000) {
+				self.achievements['Overdrive'].achieve();
 				return true;
 			}
 		}
 		// $100,000
-		self.achievements.push(new Achievement('Buisnessman','more than $100,000'));
-		self.achievements[2].condition = function () {
+		self.achievements['Buisnessman'] = new Achievement('Buisnessman','more than $100,000');
+		self.achievements['Buisnessman'].condition = function () {
 			if (self.money >= 100000) {
-				self.achievements[2].achieve();
+				self.achievements['Buisnessman'].achieve();
 				return true;
 			}
 		}
 		// $1,000,000
-		self.achievements.push(new Achievement('Capitalist','more than $1,000,000... A true hero!'));
-		self.achievements[3].condition = function () {
+		self.achievements['Capitalist'] = new Achievement('Capitalist','more than $1,000,000  A true hero!');
+		self.achievements['Capitalist'].condition = function () {
 			if (self.money >= 1000000) {
-				self.achievements[3].achieve();
+				self.achievements['Capitalist'].achieve();
 				return true;
 			}
 		}
 		// $10,000,000
-		self.achievements.push(new Achievement('Master mind','more than $10,000,000'));
-		self.achievements[4].condition = function () {
+		self.achievements['Master mind'] = new Achievement('Master mind','more than $10,000,000');
+		self.achievements['Master mind'].condition = function () {
 			if (self.money >= 10000000) {
-				self.achievements[4].achieve();
+				self.achievements['Master mind'].achieve();
 				return true;
 			}
 		}
-		self.achievements.forEach(function (achievement) {
-			list.appendChild(achievement.element);
-		});
-		
+		for (var achievement in self.achievements) {
+			list.appendChild(self.achievements[achievement].element);
+		}
+		// load from local storage
+		self.loadAchievements();
 	}
 }
 function Grid(width,height) {
@@ -353,6 +405,20 @@ function Grid(width,height) {
 		// return a catalogue of jectors
 		return special;
 	}
+	this.resize = function (width, height) {
+		var self = this;
+		// add new rows
+		for (var y = self.table.rows.length; y < height; y ++) {
+			self.newRow(self.table.rows[0].cells.length);
+		}
+		// add new columns
+		for (var y = 0; y < height; y++) {
+			for (var x = self.table.rows[y].cells.length; x < width; x++) {
+				self.newCell(self.table.rows[y],y);
+			}
+		}
+		
+	}
 	// private
 	this.table = document.getElementById('grid');
 	this.data = [];
@@ -361,21 +427,29 @@ function Grid(width,height) {
 		// html table
 		self.table.className = 'grid';
 		for (var y = 0; y < height; y++) {
-			// rows
+			self.newRow(width);
+		}
+	}
+	this.newRow = function (width) {
+		var self = this;
+		// rows
 			self.data.push([]);
 			var row = document.createElement('TR');
 			for (var x = 0; x < width; x++) {
-				// voxels
-				var voxel = new Voxel('Coolant');
-				voxel.setPressure(0);
-				var cell = document.createElement('TD');
-				cell.style.border = '0px';
-				cell.appendChild(voxel.sprite);
-				row.appendChild(cell);
-				self.data[y].push(voxel);
+				self.newCell(row,self.table.rows.length);
 			}
 			self.table.appendChild(row);
-		}
+	}
+	this.newCell = function (row,y) {
+		var self = this;
+		// voxels
+		var voxel = new Voxel('Coolant');
+		voxel.setPressure(0);
+		var cell = document.createElement('TD');
+		cell.style.border = '0px';
+		cell.appendChild(voxel.sprite);
+		row.appendChild(cell);
+		self.data[y].push(voxel);
 	}
 	this.initialize(width, height);
 }
@@ -385,7 +459,7 @@ function Voxel(name,select) {
 		var self = this;
 		if (self.pressure != null) {
 			self.overlay.style.backgroundColor = 'rgba(255,0,0,' + self.pressure/self.meltingPoint + ')';
-			self.sprite.title = self.name + "\nTemp: " + Math.round(self.pressure*1300) + ' C';
+			self.sprite.title = self.name + '\nTemp: ' + Math.round(self.pressure) + ' C\nMelting Point: ' + self.meltingPoint + ' C';
 			//self.tip.innerHTML = self.name;
 		} else {
 			self.overlay.style.backgroundColor = null;
@@ -500,7 +574,7 @@ function Voxel(name,select) {
 	this.initialize(name,select);
 	this.addEventListeners();
 }
-function Achievement(name,description) {
+function Achievement(name,description,hidden) {
 	this.name = name;
 	this.description = description;
 	this.element = document.createElement('LI');
@@ -513,17 +587,18 @@ function Achievement(name,description) {
 		self.achieved = true;
 		self.element.className = 'achieved achievement';
 	}
-	this.initialize = function () {
+	this.initialize = function (hidden) {
 		var self = this;
-		self.element.className = 'achievement';
+		self.element.className = 'achievement' + (hidden ? ' hidden' : '');
 		self.element.innerHTML = self.name;
 		var description = document.createElement('P');
+		description.className = 'smallMargin';
 		description.innerHTML = self.description;
 		description.style.fontSize = '0.5em';
 		self.element.appendChild(document.createElement('BR'));
 		self.element.appendChild(description);
 	}
-	this.initialize();
+	this.initialize(hidden);
 }
 printWithCommas = function (x) {
 	return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
