@@ -14,6 +14,7 @@ function initialize() {
 }
 var voxelData = {
 	'Thorium': {
+tier: 0,
 type: 'fuel_rod',
 sprite: 'sprites/thorium.png',
 pressure: 125000,
@@ -22,6 +23,7 @@ price: 100,
 meltingPoint: 1000,
 	},
 	'Uranium': {
+tier: 1,
 type: 'fuel_rod',
 sprite: 'sprites/uranium.png',
 pressure: 3000000,
@@ -30,6 +32,7 @@ price: 2000,
 meltingPoint: 2000,
 	},
 	'Plutonium': {
+tier: 2,
 type: 'fuel_rod',
 sprite: 'sprites/plutonium.png',
 pressure: 20000000,
@@ -38,11 +41,12 @@ price: 10000,
 meltingPoint: 3200,
 	},
 	'Coatonium': {
+tier: 3,
 type: 'fuel_rod',
 sprite: 'sprites/coatonium.png',
-pressure: 3000000000,
-rate: 100000,
-price: 1000000,
+pressure: 300000000,
+rate: 300000,
+price: 100000,
 meltingPoint: 6000,
 	},
 	'Depleted fuel': {
@@ -148,6 +152,7 @@ right: false
 					fuel.initialize('Depleted fuel');
 					fuel.setHealth(0);
 				}
+				fuel.updateSprite();
 			});
 			// pressure damages casings
 			blocks.casings.forEach(function (casing) {
@@ -257,10 +262,6 @@ right: false
 				self.reload();
 			}
 		}
-		// append everything to the body
-		/* var body = document.getElementById('body');
-		body.appendChild(self.grid.table);
-		body.appendChild(selection); */
 		// mouse
 		window.addEventListener('mousedown', function (event) {
 			switch (event.which) {
@@ -287,6 +288,8 @@ right: false
 			if (self.money >= 1000000) {
 				self.grid.resize(self.grid.width+4,self.grid.width+4);
 				self.money-= 1000000;
+				// hide the button forever!
+				this.className = 'hidden';
 			}
 		}
 		game.start(100/6);
@@ -295,7 +298,7 @@ right: false
 		var self = this;
 		var list = document.getElementById('achievements');
 		//  <$100
-		self.achievements['Tight budget'] = new Achievement('Tight budget','less than $100');
+		self.achievements['Tight budget'] = new Achievement('Tight budget','less than $100',true);
 		self.achievements['Tight budget'].condition = function () {
 			if (self.money < 100) {
 				self.achievements['Tight budget'].achieve();
@@ -348,6 +351,14 @@ right: false
 		self.achievements['Capitalist'].condition = function () {
 			if (self.money >= 1000000) {
 				self.achievements['Capitalist'].achieve();
+				return true;
+			}
+		}
+		//  <$100
+		self.achievements['Penny pincher'] = new Achievement('Penny pincher','no less than $100',true);
+		self.achievements['Penny pincher'].condition = function () {
+			if (self.achievements['Capitalist'].achieved && !self.achievements['Tight budget'].achieved) {
+				self.achievements['Penny pincher'].achieve();
 				return true;
 			}
 		}
@@ -432,9 +443,11 @@ function Grid(width,height) {
 		for (var x = 0; x < self.data.length; x++) {
 			for (var y = 0; y < self.data.length; y++) {
 				self.data[x][y].addPressure(add[x][y]);
+				// update graphical information
+				self.data[x][y].updateSprite();
 			}
 		}
-		// return a catalogue of jectors
+		// return a catalogue of functional blocks
 		return special;
 	}
 	this.resize = function (width, height) {
@@ -494,6 +507,9 @@ function Voxel(name,select) {
 		if (self.pressure != null) {
 			self.overlay.style.backgroundColor = 'rgba(255,0,0,' + self.pressure/self.meltingPoint + ')';
 			self.sprite.title = self.name + '\nTemp: ' + Math.round(self.pressure) + ' C\nMelting Point: ' + self.meltingPoint + ' C';
+			if (self.type == 'fuel_rod') {
+				self.sprite.title += '\n' + Math.round(self.health * (voxelData[self.name].pressure/voxelData[self.name].rate)) + 's remaining';
+			}
 			//self.tip.innerHTML = self.name;
 		} else {
 			self.overlay.style.backgroundColor = null;
@@ -513,13 +529,11 @@ function Voxel(name,select) {
 	}
 	this.setPressure = function (pressure) {
 		this.pressure = pressure;
-		this.updateSprite();
 	}
 	this.addPressure = function (pressure) {
 		var self = this;
 		if (self.pressure != null) {
 			self.pressure += pressure;
-			self.updateSprite();
 		}
 	}
 	// private
@@ -543,7 +557,7 @@ function Voxel(name,select) {
 		self.select = select;
 		self.name = name;
 		self.type = voxelData[self.name].type;
-		self.setHealth(0);
+		self.setHealth(1);
 		self.meltingPoint = voxelData[self.name].meltingPoint;
 		self.addHtml();
 	}
@@ -590,8 +604,15 @@ function Voxel(name,select) {
 		var self = this;
 		if (!self.select) {
 			if (left) {
-				if (game.selected != undefined && (['coolant','molten_fuel_rod','molten_metal','depleted_fuel'].indexOf(self.type) != -1 || (self.type == voxelData[game.selected].type)) && self.cost()) {
-					self.initialize(game.selected);
+				// if the existing block can be placed over or the type is the same as the selected type
+				if (game.selected != undefined && (['coolant','molten_fuel_rod','molten_metal','depleted_fuel'].indexOf(self.type) != -1 || (self.type == voxelData[game.selected].type))) {
+					// tier must be above or same
+					if (self.type != voxelData[game.selected].type || (!voxelData[game.selected].hasOwnProperty('tier') || voxelData[game.selected].tier >= voxelData[self.name].tier)) {
+						// enough money
+						if (self.cost()) {
+							self.initialize(game.selected);
+						}
+					}
 				}
 			} else if (right) {
 				self.initialize('Coolant');

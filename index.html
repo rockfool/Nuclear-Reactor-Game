@@ -3,37 +3,19 @@
         <title>Nuclear Reactor</title>   
         <script type="text/javascript" src="script.js"></script>
 		<link rel="stylesheet" type="text/css" href="style.css"></link>
-    </head>
+	</head>
 	<body id = "body" onload = "initialize()">
-		<table id = "main">
-			<tr>
-				<th colspan = "2">
-					<p>To make a reactor, create an enclosed area using casings, then place at least one coolant extractor and fuel rod to start the reaction.</p>
-					<div id = "info">
-						<p class = "bold smallMargin" id = "money"></p> <br>
-						<p class = "bold smallMargin">Rate: <span id = "rate"></span>$/sec</p>
-					</div>
-				</th>
-			</tr>
-			<tr>
-				<td>
-					<table id = "grid"></table>
-				</td>
-				<td>
-					<table id = "selection"></table>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<ul id = "achievements"></ul>
-				</td>
-				<td>
-					<div class = "locked button smallMargin bold" id = "new">Clear achievements</div>
-					<div class = "locked button smallMargin bold" id = "size">Increase Size
-						<p class = "smallMargin"> $1,000,000</p>
-					</div>
-				</td>
-			</tr>
-		</table>
+		<p style = "text-align: center;">To make a reactor, create an enclosed area using casings, then place at least one coolant extractor and fuel rod to start the reaction.</p>
+		<div id = "info">
+			<p class = "bold smallMargin" id = "money"></p> <br>
+			<p class = "bold smallMargin">Rate: <span id = "rate"></span>$/sec</p>
+		</div>
+		<table id = "grid"></table>
+		<table id = "selection"></table>
+		<ul id = "achievements"></ul>
+		<div class = "locked button smallMargin bold" id = "new">Clear achievements</div>
+		<div class = "locked button smallMargin bold" id = "size">13 x 13 grid
+			<p class = "smallMargin"> $1,000,000</p>
+		</div>
 	</body>
 </html>

@@ -16,11 +16,8 @@ body {
 	border-style: dashed;
 	border-color: #404040;
 }
-#main td {
-	vertical-align: top;
-}
-.thinColumn {
-	width: 100px;
+#info {
+	text-align: center;
 }
 #money {
 	color: #008800;
@@ -53,7 +50,7 @@ td {
 	border-color: #888888;
 }
 #selection {
-	font-size: 0.5em;
+	font-size: 0.75em;
 	display: inline-block;
 	vertical-align: top;
 	float: left;
@@ -180,4 +177,7 @@ td {
 }
 .description {
 	font-size: 0.5em;
+}
+.thinColumn {
+	width: 100px;
 }
