@@ -16,6 +16,12 @@ body {
 	border-style: dashed;
 	border-color: #404040;
 }
+#main td {
+	vertical-align: top;
+}
+.thinColumn {
+	width: 100px;
+}
 #money {
 	color: #008800;
 	display: inline-block;
@@ -47,27 +53,32 @@ td {
 	border-color: #888888;
 }
 #selection {
+	font-size: 0.5em;
 	display: inline-block;
 	vertical-align: top;
+	float: left;
 }
 #achievements {
 	display: inline-block;
 	margin: 8px;
 	right: 0px;
+}
+#new {
 	
-	
+}
+#size {
+	font-size: 3em;
 }
 .sprite {
 	display: inline-block;
 	text-align: center;
 	position: relative;
-	width: 100px;
-	height: 100px;
+	width: 80px;
+	height: 80px;
 	background-size: 100% 100%;
 }
 .sprite:hover {
 	-webkit-filter: brightness(3);
-	
 }
 .sprite:hover .tip {
 	visibility: visible;
@@ -109,29 +120,32 @@ td {
 }
 .achievement {
 	font-size: 3em;
-	color: #404040;
 	margin-top: 4px;
 	margin-bottom: 4px;
 	margin-left: 16px;
 	padding: 4px;
-	background-color: #808080;
 	
 	border: 8px;
 	border-style: double;
 	border-radius: 8px;
-	border-color: #404040;
+	
 	
 	list-style-image: url('sprites/locked.png');
 }
 .achieved {
 	color: #006600;
-	background-color: #c6ffb3;
+	background-color: #80ff80;
 	border-color: #006600;
 	
 	list-style-image: url('sprites/check.png');
 	
 	display: list-item;
 	visibility: visible;
+}
+.locked {
+	color: #404040;
+	background-color: #808080;
+	border-color: #404040;
 }
 .smallMargin {
 	margin: 4px;
@@ -146,23 +160,24 @@ td {
 	cursor: default;
 	
 	display: inline-block;
+	vertical-align: top;
 	width: auto;
 	height: auto;
 	
-	background-color: #808080;
-	
 	border: 8px;
 	border-style: outset;
-	border-color:#909090;
 	border-radius: 4px;
 	
 	padding: 4px;
 }
 .button:hover{
-	background-color: #b0b0b0;
-	border-color: #c0c0c0;
+	-webkit-filter: brightness(1.5);
+	filter: brightness(1.5);
 }
 .button:active {
-	background-color: #505050;
-	border-color: #606060;
+	-webkit-filter: brightness(0.5);
+	filter: brightness(0.5);
+}
+.description {
+	font-size: 0.5em;
 }

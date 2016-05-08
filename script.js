@@ -27,7 +27,7 @@ sprite: 'sprites/uranium.png',
 pressure: 3000000,
 rate: 10000,
 price: 2000,
-meltingPoint: 1700,
+meltingPoint: 2000,
 	},
 	'Plutonium': {
 type: 'fuel_rod',
@@ -37,6 +37,14 @@ rate: 50000,
 price: 10000,
 meltingPoint: 3200,
 	},
+	'Coatonium': {
+type: 'fuel_rod',
+sprite: 'sprites/coatonium.png',
+pressure: 3000000000,
+rate: 100000,
+price: 1000000,
+meltingPoint: 6000,
+	},
 	'Depleted fuel': {
 type: 'depleted_fuel',
 sprite: 'sprites/depleted_fuel.png',
@@ -45,7 +53,7 @@ meltingPoint: 2000,
 	'Molten fuel': {
 type: 'molten_fuel_rod',
 sprite: 'sprites/molten_fuel_rod.png',
-meltingPoint: 2000,
+meltingPoint: 1510,
 	},
 	'Control rod': {
 type: 'control_rod',
@@ -65,12 +73,19 @@ type: 'casing',
 sprite: 'sprites/galvanized_casing.png',
 health: 16,
 price: 1000,
-meltingPoint: 1700 ,
+meltingPoint: 2000 ,
+	},
+	'Reinforced casing': {
+type: 'casing',
+sprite: 'sprites/reinforced_casing.png',
+health: 16,
+price: 4000,
+meltingPoint: 3000 ,
 	},
 	'Molten metal': {
 type: 'molten_metal',
 sprite: 'sprites/molten_metal.png',
-meltingPoint: 2000,
+meltingPoint: 1510,
 price: 0,
 	},
 	'Coolant': {
@@ -83,6 +98,13 @@ type: 'coolant_ejector',
 sprite: 'sprites/coolant_ejector.png',
 price: 75,
 rate: 0.5,
+meltingPoint: 1510,
+	},
+	'Turbo ejector': {
+type: 'coolant_ejector',
+sprite: 'sprites/turbo_ejector.png',
+price: 4000,
+rate: 1.0,
 meltingPoint: 1510,
 	}
 }
@@ -140,17 +162,22 @@ right: false
 				ejector.addPressure(-transfer);
 			});
 			var previousMoney = self.money;
-			self.money += self.pressureSum/1000;
+			self.money += self.pressureSum/1000; // 1000 pressure = $1
 			self.pressureSum = 0;
 			// update money supply
 			self.rate = Math.round((self.money-previousMoney)/elapsed);
 			document.getElementById('money').innerHTML = '$' + printWithCommas(Math.floor(self.money)); 
 			document.getElementById('rate').innerHTML = printWithCommas(self.rate);
 			// check achievements
-			for (var achievement in self.achievements) {
-				if (self.achievements[achievement].condition()) {
-					// update local storage
-					self.storeAchievements();
+			if (self.money >= 1000000) {
+				document.getElementById('size').className = 'achieved button smallMargin bold';
+			}
+			if (!self.debug) {
+				for (var achievement in self.achievements) {
+					if (self.achievements[achievement].condition()) {
+						// update local storage
+						self.storeAchievements();
+					}
 				}
 			}
 			if (self.debug) {
@@ -195,14 +222,14 @@ right: false
 	this.initialize = function () {
 		var self = this;
 		// block selection
-		var table = document.getElementById('selection');
+		var selection = document.getElementById('selection');
 		for (var type in voxelData) {
 			// blacklist unplaceable types
 			if (['Coolant','Molten fuel','Molten metal','Depleted fuel'].indexOf(type) == -1) {
 				var row = document.createElement('TR');
 				// name
 				var name = document.createElement('TD');
-				name.className = 'select';
+				name.className = 'select thinColumn';
 				name.innerHTML = type;
 				row.appendChild(name);
 				// image
@@ -217,7 +244,7 @@ right: false
 				price.innerHTML = '$' + printWithCommas(voxelData[type].price);
 				row.appendChild(price);
 				
-				table.appendChild(row);
+				selection.appendChild(row);
 			}
 		}
 		// grid
@@ -225,13 +252,15 @@ right: false
 		// achievements
 		self.initializeAchievements();
 		document.getElementById('new').onclick = function () {
-			localStorage.removeItem('reactorGame');
-			self.reload();
+			if (window.confirm('Are you sure you want to reset your achievements?')) {
+				localStorage.removeItem('reactorGame');
+				self.reload();
+			}
 		}
 		// append everything to the body
-		var body = document.getElementById('body');
+		/* var body = document.getElementById('body');
 		body.appendChild(self.grid.table);
-		body.appendChild(table);
+		body.appendChild(selection); */
 		// mouse
 		window.addEventListener('mousedown', function (event) {
 			switch (event.which) {
@@ -253,8 +282,13 @@ right: false
 			if (self.debug && event.which == 13) {
 				self.start();
 			}
-		})
-		self.grid.resize(17,17);
+		});
+		document.getElementById('size').onclick = function () {
+			if (self.money >= 1000000) {
+				self.grid.resize(self.grid.width+4,self.grid.width+4);
+				self.money-= 1000000;
+			}
+		}
 		game.start(100/6);
 	}
 	this.initializeAchievements = function () {
@@ -378,10 +412,8 @@ function Grid(width,height) {
 							adjacent.push({pressure: adjCell.pressure,x:adjX,y:adjY});
 						}
 					} else if (!game.debug && cell.pressure > 0 && cell.type != 'casing' && cell.type != 'coolant_ejector') {
-						if (window.confirm('Reactor breach!')) {
-							game.reload();
-							
-						}
+						window.alert('Reactor breach!');
+						game.reload();
 					}
 				}
 				// add this cell to the calculations
@@ -393,7 +425,7 @@ function Grid(width,height) {
 				});
 				equalized /= adjacent.length;
 				// add pressure
-				add[x][y] += (equalized-cell.pressure) * (adjacent.length/5);
+				add[x][y] += (equalized-cell.pressure) * (adjacent.length/5) * 1;
 			}
 		}
 		// sum up pressures
@@ -407,6 +439,7 @@ function Grid(width,height) {
 	}
 	this.resize = function (width, height) {
 		var self = this;
+		self.width = width;
 		// add new rows
 		for (var y = self.table.rows.length; y < height; y ++) {
 			self.newRow(self.table.rows[0].cells.length);
@@ -422,6 +455,7 @@ function Grid(width,height) {
 	// private
 	this.table = document.getElementById('grid');
 	this.data = [];
+	this.width = width;
 	this.initialize = function (width, height) {
 		var self = this;
 		// html table
@@ -589,12 +623,11 @@ function Achievement(name,description,hidden) {
 	}
 	this.initialize = function (hidden) {
 		var self = this;
-		self.element.className = 'achievement' + (hidden ? ' hidden' : '');
+		self.element.className = 'locked achievement' + (hidden ? ' hidden' : '');
 		self.element.innerHTML = self.name;
 		var description = document.createElement('P');
-		description.className = 'smallMargin';
+		description.className = 'description smallMargin';
 		description.innerHTML = self.description;
-		description.style.fontSize = '0.5em';
 		self.element.appendChild(document.createElement('BR'));
 		self.element.appendChild(description);
 	}
