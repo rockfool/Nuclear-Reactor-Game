@@ -45,9 +45,9 @@ tier: 3,
 type: 'fuel_rod',
 sprite: 'sprites/coatonium.png',
 pressure: 300000000,
-rate: 300000,
+rate: 200000,
 price: 100000,
-meltingPoint: 6000,
+meltingPoint: 7000,
 	},
 	'Depleted fuel': {
 type: 'depleted_fuel',
@@ -615,6 +615,9 @@ function Voxel(name,select) {
 					}
 				}
 			} else if (right) {
+				if (self.type == 'casing') {
+					self.setPressure(0);
+				}
 				self.initialize('Coolant');
 			}
 		}
