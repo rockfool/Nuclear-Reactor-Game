@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <title>Nuclear Reactor</title>   
+        <script type="text/javascript" src="script.js"></script>
+		<link rel="stylesheet" type="text/css" href="style.css"></link>
+	</head>
+	<body id = "body" onload = "initialize()">
+		<div class = "body">
+			<div class = "main">
+				<p class = "gameInfo">To make a reactor, create an enclosed area using casings, then place at least one coolant extractor and fuel rod to start the reaction.</p>
+				<div class = "flex">
+					<div class = "column">
+						<div id = "info">
+							<p class = "bold smallMargin" id = "money"></p><br>
+							<span id = "rate"></span>$/sec
+						</div>
+						<table id = "grid"></table>
+					</div>
+					<table id = "selection"></table>
+					<div class = "column">
+						<ul id = "achievements"></ul>
+						<div class = "ui__button--disabled" id = "size">13 x 13 grid
+							<p class = "smallMargin"> $1,000,000</p>
+						</div>
+						<div class = "ui__button" id = "new">Clear Achievements</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

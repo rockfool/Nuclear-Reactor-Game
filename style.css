@@ -1,6 +1,6 @@
 body {
 	cursor: default;
-	background-color: #cdcdcd;
+	background-color: silver;
 	vertical-align: top;
 	display: inline-block;
 	font-size: 1em;
@@ -12,12 +12,24 @@ body {
     -MS-USER-SELECT: NONE; /* IE */
     USER-SELECT: NONE; /* CSS3 */
 	border: 8px;
-	padding: 8px;
-	border-style: dashed;
-	border-color: #404040;
+	border: 8px double grey;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+}
+.body {
+	position: absolute;
+	left: -8px;
+	right: -8px;
+	top: -8px;
+	bottom: -8px;
+	text-align: center;
+	border: 8px dashed grey;
 }
 #info {
-	text-align: center;
+	text-align: left;
 }
 #money {
 	color: #008800;
@@ -41,38 +53,50 @@ td {
 	padding: 0px;
 }
 #grid {
-	margin: 8px;
+	margin: 4px;
 	display: inline-block;
 	vertical-align: top;
 	border-collapse: collapse;
-	border: 8px;
-	border-style: outset;
-	border-color: #888888;
+	border: 8px solid silver;
+	border-radius: 8px;
 }
 #selection {
-	font-size: 0.75em;
+	background-color: #cccccc;
+	border-radius: 8px;
+	margin: 4px;
+	font-size: 0.6em;
 	display: inline-block;
 	vertical-align: top;
 	float: left;
 }
 #achievements {
 	display: inline-block;
-	margin: 8px;
+	overflow-y: scroll;
+	margin: 4px;
+	border: 8px solid silver;
+	border-radius: 8px;
 	right: 0px;
-}
-#new {
-	
+	align-self: stretch;
+	height: 50%;
+	background: silver;
 }
 #size {
 	font-size: 3em;
+	float: bottom;
+}
+#clear {
 }
 .sprite {
 	display: inline-block;
 	text-align: center;
 	position: relative;
-	width: 80px;
-	height: 80px;
+	width: 70px;
+	height: 70px;
 	background-size: 100% 100%;
+	background-repeat: no-repeat;
+}
+.sprite--select {
+	border: 4px solid transparent;
 }
 .sprite:hover {
 	-webkit-filter: brightness(3);
@@ -106,26 +130,20 @@ td {
 	text-align: center;
 }
 .selected {
-	border: 8px;
+	border: 4px solid blue;
 	border-radius: 8px;
-	border-style: inset;
 	background-color: #ffffff;
 	background-repeat: no-repeat;
-	border-color: #0000ff;
-	width: 84px;
-	height: 84px;
 }
 .achievement {
-	font-size: 3em;
+	font-size: 2em;
 	margin-top: 4px;
 	margin-bottom: 4px;
 	margin-left: 16px;
-	padding: 4px;
-	
+	padding: 0px;
 	border: 8px;
 	border-style: double;
 	border-radius: 8px;
-	
 	
 	list-style-image: url('sprites/locked.png');
 }
@@ -151,33 +169,68 @@ td {
 	visibility: hidden;
 	display: none;
 }
-.button {
-	font-size: 2em;
-	transition-duration: 0.5s; /* delays for 1 second */
-	cursor: default;
-	
-	display: inline-block;
-	vertical-align: top;
-	width: auto;
-	height: auto;
-	
-	border: 8px;
-	border-style: outset;
-	border-radius: 4px;
-	
-	padding: 4px;
-}
-.button:hover{
-	-webkit-filter: brightness(1.5);
-	filter: brightness(1.5);
-}
-.button:active {
-	-webkit-filter: brightness(0.5);
-	filter: brightness(0.5);
-}
 .description {
 	font-size: 0.5em;
 }
 .thinColumn {
 	width: 100px;
+}
+.gameInfo {
+	background-color: #cccccc;
+	border-radius: 8px;
+	margin: 4px;
+	padding: 4px;
+}
+.main {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.flex {
+	display: flex;
+	align-items: stretch;
+	justify-content: center;
+}
+.column {
+	background-color: #cccccc;
+	border-radius: 8px;
+	margin: 4px;
+	padding: 4px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.ui__button {
+	color: grey;
+	text-shadow: 1px 1px 0px white, -1px -1px 0px black;
+	background: linear-gradient(to right bottom, white, silver, white, grey, grey);
+	
+	font-size: 1em;
+	transition-duration: 0.5s;
+	cursor: grab;
+	
+	display: inline-block;
+	
+	border: 4px outset white;
+	border-radius: 6px;
+	
+	padding: 4px;
+	margin: 4px;
+}
+.ui__button--disabled {
+	background: #bbbbbb;
+	color: #aaaaaa;
+	display: inline-block;
+	border-radius: 6px;
+	
+	padding: 4px;
+	margin: 4px;
+}
+.ui__button:hover{
+	color: black;
+	text-shadow: 1px 1px 0px white, -1px -1px 0px grey;
+	background: linear-gradient(to right bottom, white, grey);;
+}
+.ui__button:active{
+	color: white;
 }

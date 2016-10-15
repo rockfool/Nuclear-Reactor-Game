@@ -1,0 +1,40 @@
+.ui__button {
+	color: grey;
+	text-shadow: 1px 1px 0px white, -1px -1px 0px black;
+	background: linear-gradient(to right bottom, white, silver, white, grey, grey);
+	
+	font-size: 1em;
+	transition-duration: 0.5s;
+	cursor: grab;
+	
+	display: inline-block;
+	
+	border: 4px outset white;
+	border-radius: 6px;
+	
+	padding: 4px;
+	margin: 4px;
+}
+.ui__button:hover{
+	color: black;
+	text-shadow: 1px 1px 0px white, -1px -1px 0px grey;
+	background: linear-gradient(to right bottom, white, grey);;
+}
+.ui__button:active{
+	color: white;
+}
+.ui__input {
+	color: white;
+	background-color: black;
+	border: 2px solid white;
+}
+.ui__checkbox {
+	/* Double-sized Checkboxes */
+  -ms-transform: scale(2); /* IE */
+  -moz-transform: scale(2); /* FF */
+  -webkit-transform: scale(2); /* Safari and Chrome */
+  -o-transform: scale(2); /* Opera */
+}
+.ui__textbox {
+	
+}

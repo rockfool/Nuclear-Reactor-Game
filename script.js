@@ -175,7 +175,7 @@ right: false
 			document.getElementById('rate').innerHTML = printWithCommas(self.rate);
 			// check achievements
 			if (self.money >= 1000000) {
-				document.getElementById('size').className = 'achieved button smallMargin bold';
+				document.getElementById('size').className = 'ui__button smallMargin bold';
 			}
 			if (!self.debug) {
 				for (var achievement in self.achievements) {
@@ -232,15 +232,16 @@ right: false
 			// blacklist unplaceable types
 			if (['Coolant','Molten fuel','Molten metal','Depleted fuel'].indexOf(type) == -1) {
 				var row = document.createElement('TR');
-				// name
+				/* // name
 				var name = document.createElement('TD');
 				name.className = 'select thinColumn';
 				name.innerHTML = type;
-				row.appendChild(name);
+				row.appendChild(name); */
 				// image
 				var sprite = document.createElement('TD');
 				var voxel = new Voxel(type,true);
 				self.selection.push(voxel);
+				voxel.sprite.className = "sprite sprite--select";
 				sprite.appendChild(voxel.sprite);
 				row.appendChild(sprite);
 				// price
@@ -588,7 +589,7 @@ function Voxel(name,select) {
 			if (self.select) {
 				game.selected = self.name;
 				game.selection.forEach(function (voxel) {
-					voxel.sprite.className = 'sprite';
+					voxel.sprite.className = 'sprite sprite--select';
 				})
 				self.sprite.className = 'sprite selected';
 			}
