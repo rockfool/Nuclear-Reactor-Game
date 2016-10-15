@@ -100,6 +100,7 @@ meltingPoint: 1510,
 	'Coolant ejector': {
 type: 'coolant_ejector',
 sprite: 'sprites/coolant_ejector.png',
+health: 1,
 price: 75,
 rate: 0.5,
 meltingPoint: 1510,
@@ -107,6 +108,7 @@ meltingPoint: 1510,
 	'Turbo ejector': {
 type: 'coolant_ejector',
 sprite: 'sprites/turbo_ejector.png',
+health: 1,
 price: 4000,
 rate: 1.0,
 meltingPoint: 1510,
@@ -121,9 +123,9 @@ function Game() {
 	this.selection =  []; // block selection
 	this.selected; // currently selected voxel type
 	this.pressureSum = 0;
-	this.money = this.debug ? Infinity : 1000;
+	this.money = 1000;
 	this.rate;
-	this.lastFrame = Date.now();
+	this.timeStep = 1/60; // in seconds
 	// mouse
 	this.mouse = {
 left: false,
@@ -135,19 +137,16 @@ right: false
 		self.stop();
 		window.location.reload();
 	};
-	this.start = function (delay) {
+	this.start = function () {
 		var self = this;
 		self.interval = window.setInterval(function () {
-			var now = Date.now();
-			var elapsed = self.debug? 1 : (now - self.lastFrame)/1000;
-			self.lastFrame = now;
 			// update the simulation
 			var blocks = self.grid.update();
 			// fuel rods create pressure
 			blocks.fuelRods.forEach(function (fuel) {
 				if (fuel.health > 0) {
-					fuel.addPressure((elapsed)*voxelData[fuel.name].rate);
-					fuel.addHealth(-((elapsed)*voxelData[fuel.name].rate)/voxelData[fuel.name].pressure);
+					fuel.addPressure((self.timeStep)*voxelData[fuel.name].rate);
+					fuel.addHealth(-((self.timeStep)*voxelData[fuel.name].rate)/voxelData[fuel.name].pressure);
 				} else {
 					fuel.initialize('Depleted fuel');
 					fuel.setHealth(0);
@@ -156,25 +155,26 @@ right: false
 			});
 			// pressure damages casings
 			blocks.casings.forEach(function (casing) {
-				self.damageVoxel(casing,elapsed);
+				self.damageVoxel(casing,self.timeStep);
 			});
 			// eject pressure
 			blocks.coolantEjectors.forEach(function (ejector) {
-				self.damageVoxel(ejector,elapsed);
-				var transfer = ejector.pressure * voxelData[ejector.name].rate;
-				self.pressureSum += transfer;
-				// reset the ejector
-				ejector.addPressure(-transfer);
+				if (!self.damageVoxel(ejector,self.timeStep)) {
+					var transfer = ejector.pressure * voxelData[ejector.name].rate;
+					self.pressureSum += transfer;
+					// reset the ejector
+					ejector.addPressure(-transfer);
+				}
 			});
 			var previousMoney = self.money;
 			self.money += self.pressureSum/1000; // 1000 pressure = $1
 			self.pressureSum = 0;
 			// update money supply
-			self.rate = Math.round((self.money-previousMoney)/elapsed);
+			self.rate = Math.round((self.money-previousMoney)/self.timeStep);
 			document.getElementById('money').innerHTML = '$' + printWithCommas(Math.floor(self.money)); 
 			document.getElementById('rate').innerHTML = printWithCommas(self.rate);
 			// check achievements
-			if (self.money >= 1000000) {
+			if (self.debug || self.money >= 1000000) {
 				document.getElementById('size').className = 'ui__button smallMargin bold';
 			}
 			if (!self.debug) {
@@ -188,7 +188,7 @@ right: false
 			if (self.debug) {
 				self.stop();
 			}
-		}, delay);
+		}, self.timeStep*1000);
 	}
 	this.storeAchievements = function () {
 		var self = this;
@@ -218,7 +218,9 @@ right: false
 		if (voxel.health < 0) {
 			voxel.initialize('Molten metal');
 			voxel.setHealth(0);
+			return true;
 		}
+		return false;
 	}
 	this.stop = function () {
 		window.clearInterval(this.interval);
@@ -286,14 +288,14 @@ right: false
 			}
 		});
 		document.getElementById('size').onclick = function () {
-			if (self.money >= 1000000) {
+			if (self.debug || self.money >= 1000000) {
 				self.grid.resize(self.grid.width+4,self.grid.width+4);
 				self.money-= 1000000;
 				// hide the button forever!
 				this.className = 'hidden';
 			}
 		}
-		game.start(100/6);
+		game.start();
 	}
 	this.initializeAchievements = function () {
 		var self = this;
@@ -397,12 +399,7 @@ function Grid(width,height) {
 				var cell = self.data[x][y];
 				// catalogue special blocks
 				if (voxelData[cell.name].type == 'coolant_ejector'){
-					if (cell.pressure >= cell.meltingPoint) {
-						cell.initialize('Molten metal');
-						cell.setHealth(0);
-					} else {
-						special.coolantEjectors.push(cell);
-					}
+					special.coolantEjectors.push(cell);
 				} else if (voxelData[cell.name].type == 'fuel_rod') {	
 					if (cell.pressure >= cell.meltingPoint) {
 						cell.initialize('Molten fuel');
@@ -522,7 +519,11 @@ function Voxel(name,select) {
 		self.healthBar.style.width = self.health*100 + '%';
 		var green = Math.floor((self.health)*255);
 		var red = Math.floor((1 - self.health)*255);
-		self.healthBar.style.backgroundColor = 'rgb(' + red + ',' + green + ',0)';
+		if (self.type !== 'fuel_rod' && self.health == 1) {
+			self.healthBar.style.backgroundColor = "transparent";
+		} else {
+			self.healthBar.style.backgroundColor = 'rgb(' + red + ',' + green + ',0)';
+		}
 	}
 	this.addHealth = function (health) {
 		var self = this;
@@ -565,7 +566,6 @@ function Voxel(name,select) {
 	this.addHtml = function () {
 		var self = this;
 		self.sprite.className = 'sprite';
-		self.sprite.innerHTML = '';
 		if (self.pressure != null && !select) {
 			self.sprite.style.backgroundImage = 'url(' + voxelData[self.name].sprite + '), url(' + voxelData['Coolant'].sprite + ')';
 		} else {
@@ -573,13 +573,10 @@ function Voxel(name,select) {
 		}
 		// heat overlay
 		self.overlay.className = 'sprite';
-		self.sprite.appendChild(self.overlay);
 		self.updateSprite();
 		// healthBar
 		if (!select && voxelData[self.name].type != 'coolant') {
 			self.healthBar.className = 'progress';
-			self.setHealth(1);
-			self.sprite.appendChild(self.healthBar);
 		}
 	}
 	this.addEventListeners = function () {
@@ -610,7 +607,7 @@ function Voxel(name,select) {
 					// tier must be above or same
 					if (self.type != voxelData[game.selected].type || (!voxelData[game.selected].hasOwnProperty('tier') || voxelData[game.selected].tier >= voxelData[self.name].tier)) {
 						// enough money
-						if (self.cost()) {
+						if (game.debug || self.cost()) {
 							self.initialize(game.selected);
 						}
 					}
@@ -631,6 +628,8 @@ function Voxel(name,select) {
 		}
 	}
 	this.initialize(name,select);
+	this.sprite.appendChild(this.overlay);
+	this.sprite.appendChild(this.healthBar);
 	this.addEventListeners();
 }
 function Achievement(name,description,hidden) {
